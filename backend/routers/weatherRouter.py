@@ -1,6 +1,6 @@
 # backend/routes/weather_router.py
 from fastapi import APIRouter, Query
-from backend.controllers.weather_controller import get_weather_by_city
+from controllers.weather_controller import get_weather_by_city
 
 router = APIRouter(prefix="/api", tags=["weather"])
 

@@ -3,15 +3,15 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from typing import List
 from pydantic import BaseModel, Field  # <-- IMPORT NECESSARIO
 
-from backend.utils.auth import get_current_user
-from backend.models.plantModel import PlantCreate, PlantUpdate, PlantOut
-from backend.controllers.plantsController import (
+from utils.auth import get_current_user
+from models.plantModel import PlantCreate, PlantUpdate, PlantOut
+from controllers.plantsController import (
     list_plants, get_plant, create_plant, update_plant, delete_plant,
     save_plant_image, remove_plant_image,
 )
-from backend.controllers.ai_irrigazione_controller import compute_for_plant, compute_batch
+from controllers.ai_irrigazione_controller import compute_for_plant, compute_batch
 
-from backend.database import db
+from database import db
 
 router = APIRouter(prefix="/api/piante", tags=["piante"])
 plants_collection = db["piante"]

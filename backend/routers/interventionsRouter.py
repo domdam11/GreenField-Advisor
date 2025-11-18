@@ -2,9 +2,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
 
-from backend.utils.auth import get_current_user
-from backend.models.interventionModel import InterventionCreate, InterventionUpdate, InterventionOut
-from backend.controllers.interventionsController import (
+from utils.auth import get_current_user
+from models.interventionModel import InterventionCreate, InterventionUpdate, InterventionOut
+from controllers.interventionsController import (
     list_interventions,
     create_intervention,
     patch_intervention,

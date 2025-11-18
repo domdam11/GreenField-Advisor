@@ -3,12 +3,12 @@ from fastapi import APIRouter, Response, Request, Depends, HTTPException, Upload
 
 from datetime import datetime
 from bson import ObjectId
-from backend.controllers.userController import get_me, set_user_avatar
-from backend.database import db
+from controllers.userController import get_me, set_user_avatar
+from database import db
 
 
-from backend.controllers import userController
-from backend.utils.auth import get_current_user
+from controllers import userController
+from utils.auth import get_current_user
 router = APIRouter()
 users_collection = db["utenti"]
 interventions_collection = db["interventi"]

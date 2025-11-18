@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 
-from backend.utils.auth import get_current_user
-from backend.utils.trefle_service import search_plants, fetch_plant_by_id, TrefleError
+from utils.auth import get_current_user
+from utils.trefle_service import search_plants, fetch_plant_by_id, TrefleError
 
 router = APIRouter(prefix="/api/trefle", tags=["trefle"])
 
