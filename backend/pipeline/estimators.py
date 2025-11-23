@@ -34,165 +34,217 @@ class IrrigationStrategy(ABC):
     
     @abstractmethod
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Stima fabbisogno idrico per questa pianta.
-        
-        Returns:
-            {
-                "should_water": bool,
-                "decision": IrrigationDecision,
-                "water_amount_ml": float,
-                "confidence": float (0-1),
-                "reasoning": str
-            }
-        """
+        """Stima fabbisogno idrico per questa pianta."""
         pass
 
 
 class TomatoStrategy(IrrigationStrategy):
-    """Strategia per pomodori"""
+    """Strategia per pomodori, ora con modulazione suolo."""
     
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
         soil_moisture = cleaned_data.get("soil_moisture", 50)
-        stress_index = features.get("water_stress_index", 50)
-        urgency = features.get("irrigation_urgency", 5)
         
-        # Pomodori: preferiscono suolo costantemente umido (60-80%)
+        # 🟢 RECUPERA IL FATTORE SUOLO DALLE FEATURE
+        swrf = features.get("soil_retention_factor", 1.0)
+        soil_type = cleaned_data.get("soil", "N/D") # Nome del terreno
+        
+        # Modulatore volume (Alto SWRF -> Più volume, Basso SWRF -> Meno volume)
+        volume_modulator = swrf * 1.05 
+
+        # --- Logica Decisionale Base ---
         if soil_moisture < 50:
             decision = IrrigationDecision.WATER_HEAVY
-            water_amount = 2000  # ml
-            reasoning = "Suolo troppo secco per pomodori. Irrigazione abbondante necessaria."
+            base_amount = 2000
+            reasoning = "Suolo troppo secco per pomodori."
         elif soil_moisture < 60:
             decision = IrrigationDecision.WATER_MODERATE
-            water_amount = 1500
+            base_amount = 1500
             reasoning = "Suolo sotto ottimale per pomodori. Irrigazione moderata."
         elif soil_moisture < 70:
             decision = IrrigationDecision.WATER_LIGHT
-            water_amount = 1000
+            base_amount = 1000
             reasoning = "Suolo leggermente secco. Irrigazione leggera."
         else:
-            decision = IrrigationDecision.DO_NOT_WATER
+            # 🟢 CONTROLLO RISTAGNO (per terreni argillosi)
+            if soil_moisture > 75 and swrf > 1.25: # Se argilloso e molto umido
+                 decision = IrrigationDecision.DO_NOT_WATER
+                 water_amount = 0
+                 reasoning = f"Suolo molto umido ({soil_moisture:.1f}%) e {soil_type}. Rischio ristagno idrico!"
+            else:
+                decision = IrrigationDecision.DO_NOT_WATER
+                water_amount = 0
+                reasoning = "Suolo sufficientemente umido. Non irrigare."
+
+        if decision != IrrigationDecision.DO_NOT_WATER:
+            # 🟢 APPLICA MODULATORE ALLA QUANTITÀ FINALE
+            water_amount = round(base_amount * volume_modulator, 0)
+        else:
             water_amount = 0
-            reasoning = "Suolo sufficientemente umido. Non irrigare."
-            
+        
         return {
             "should_water": decision != IrrigationDecision.DO_NOT_WATER,
             "decision": decision.value,
             "water_amount_ml": water_amount,
-            "confidence": 0.85,
-            "reasoning": reasoning,
+            "confidence": 0.85, 
+            "reasoning": f"{reasoning} (Terreno: {soil_type.capitalize()})", 
             "plant_type": PlantType.TOMATO.value
         }
 
 
 class LettuceStrategy(IrrigationStrategy):
-    """Strategia per lattuga"""
+    """Strategia per lattuga, ora con modulazione suolo."""
     
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
         soil_moisture = cleaned_data.get("soil_moisture", 50)
-        
+        swrf = features.get("soil_retention_factor", 1.0)
+        soil_type = cleaned_data.get("soil", "N/D")
+        volume_modulator = swrf * 1.05 
+
         # Lattuga: richiede suolo sempre umido (70-85%)
         if soil_moisture < 60:
             decision = IrrigationDecision.WATER_HEAVY
-            water_amount = 1800
+            base_amount = 1800
             reasoning = "Lattuga necessita suolo molto umido. Irrigare abbondantemente."
         elif soil_moisture < 70:
             decision = IrrigationDecision.WATER_MODERATE
-            water_amount = 1200
+            base_amount = 1200
             reasoning = "Suolo sotto ottimale per lattuga."
         elif soil_moisture < 80:
             decision = IrrigationDecision.WATER_LIGHT
-            water_amount = 800
+            base_amount = 800
             reasoning = "Mantenimento umidità per lattuga."
         else:
-            decision = IrrigationDecision.DO_NOT_WATER
+            if soil_moisture > 85 and swrf > 1.25:
+                 decision = IrrigationDecision.DO_NOT_WATER
+                 water_amount = 0
+                 reasoning = f"Suolo saturo ({soil_moisture:.1f}%) e {soil_type}. Rischio ristagno."
+            else:
+                decision = IrrigationDecision.DO_NOT_WATER
+                water_amount = 0
+                reasoning = "Suolo ottimale per lattuga."
+
+        if decision != IrrigationDecision.DO_NOT_WATER:
+            water_amount = round(base_amount * volume_modulator, 0)
+        else:
             water_amount = 0
-            reasoning = "Suolo ottimale per lattuga."
             
         return {
             "should_water": decision != IrrigationDecision.DO_NOT_WATER,
             "decision": decision.value,
             "water_amount_ml": water_amount,
             "confidence": 0.80,
-            "reasoning": reasoning,
+            "reasoning": f"{reasoning} (Terreno: {soil_type.capitalize()})",
             "plant_type": PlantType.LETTUCE.value
         }
 
 
 class BasilStrategy(IrrigationStrategy):
-    """Strategia per basilico"""
+    """Strategia per basilico, ora con modulazione suolo."""
     
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
         soil_moisture = cleaned_data.get("soil_moisture", 50)
-        
+        swrf = features.get("soil_retention_factor", 1.0)
+        soil_type = cleaned_data.get("soil", "N/D")
+        volume_modulator = swrf * 1.05 
+
         # Basilico: suolo moderatamente umido (55-70%)
         if soil_moisture < 45:
             decision = IrrigationDecision.WATER_HEAVY
-            water_amount = 1500
-            reasoning = "Basilico richiede irrigazione frequente."
+            base_amount = 1500
+            reasoning = "Basilico richiede irrigazione urgente."
         elif soil_moisture < 55:
             decision = IrrigationDecision.WATER_MODERATE
-            water_amount = 1000
+            base_amount = 1000
             reasoning = "Suolo sotto ottimale per basilico."
         elif soil_moisture < 65:
             decision = IrrigationDecision.WATER_LIGHT
-            water_amount = 700
+            base_amount = 700
             reasoning = "Leggera irrigazione per basilico."
         else:
-            decision = IrrigationDecision.DO_NOT_WATER
+            if soil_moisture > 75 and swrf > 1.25:
+                 decision = IrrigationDecision.DO_NOT_WATER
+                 water_amount = 0
+                 reasoning = f"Suolo troppo umido ({soil_moisture:.1f}%) e {soil_type}. Rischio funghi/ristagno."
+            else:
+                decision = IrrigationDecision.DO_NOT_WATER
+                water_amount = 0
+                reasoning = "Suolo adeguato per basilico."
+
+        if decision != IrrigationDecision.DO_NOT_WATER:
+            water_amount = round(base_amount * volume_modulator, 0)
+        else:
             water_amount = 0
-            reasoning = "Suolo adeguato per basilico."
             
         return {
             "should_water": decision != IrrigationDecision.DO_NOT_WATER,
             "decision": decision.value,
             "water_amount_ml": water_amount,
             "confidence": 0.78,
-            "reasoning": reasoning,
+            "reasoning": f"{reasoning} (Terreno: {soil_type.capitalize()})",
             "plant_type": PlantType.BASIL.value
         }
 
 
 class GenericStrategy(IrrigationStrategy):
-    """Strategia generica per piante non specificate"""
+    """Strategia generica (da cui derivano Pepper/Cucumber)"""
     
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
         soil_moisture = cleaned_data.get("soil_moisture", 50)
-        stress_index = features.get("water_stress_index", 50)
         urgency = features.get("irrigation_urgency", 5)
-        
+        stress_index = features.get("water_stress_index", 50)
+        swrf = features.get("soil_retention_factor", 1.0) # 🟢 Prendi il fattore suolo
+        soil_type = cleaned_data.get("soil", "N/D")
+        volume_modulator = swrf * 1.05 
+
         # Logica generica basata su stress e urgenza
         if urgency >= 8 or stress_index >= 70:
             decision = IrrigationDecision.WATER_HEAVY
-            water_amount = 2000
+            base_amount = 2000
             reasoning = "Alto stress idrico rilevato."
         elif urgency >= 5 or stress_index >= 50:
             decision = IrrigationDecision.WATER_MODERATE
-            water_amount = 1500
+            base_amount = 1500
             reasoning = "Stress idrico moderato."
         elif urgency >= 3 or stress_index >= 30:
-            decision = IrrigationDecision.WATER_LIGHT
-            water_amount = 1000
-            reasoning = "Leggero stress idrico."
+            # 🟢 ABBASSAMENTO SOGLIA se sabbioso (sabbia stressa prima)
+            if swrf < 0.95 and urgency >= 2: 
+                 decision = IrrigationDecision.WATER_LIGHT
+                 base_amount = 800
+                 reasoning = "Stress idrico dovuto a bassa ritenzione del suolo (Sabbia)."
+            else:
+                 decision = IrrigationDecision.WATER_LIGHT
+                 base_amount = 1000
+                 reasoning = "Leggero stress idrico."
         else:
-            decision = IrrigationDecision.DO_NOT_WATER
-            water_amount = 0
-            reasoning = "Condizioni idriche adeguate."
+            # 🟢 CONTROLLO RISTAGNO
+            if soil_moisture > 70 and swrf > 1.25:
+                 decision = IrrigationDecision.DO_NOT_WATER
+                 water_amount = 0
+                 reasoning = f"Suolo umido ({soil_moisture:.1f}%) e {soil_type}. Rischio ristagno."
+            else:
+                decision = IrrigationDecision.DO_NOT_WATER
+                water_amount = 0
+                reasoning = "Condizioni idriche adeguate."
             
+        if decision != IrrigationDecision.DO_NOT_WATER:
+            # Modula la quantità in base al tipo di terreno
+            water_amount = round(base_amount * volume_modulator, 0)
+        else:
+            water_amount = 0
+        
         return {
             "should_water": decision != IrrigationDecision.DO_NOT_WATER,
             "decision": decision.value,
             "water_amount_ml": water_amount,
             "confidence": 0.70,
-            "reasoning": reasoning,
-            "plant_type": PlantType.GENERIC.value
+            "reasoning": f"{reasoning} (Terreno: {soil_type.capitalize()})",
+            "plant_type": cleaned_data.get("plant_type_input", PlantType.GENERIC.value)
         }
 
 
 class IrrigationEstimator(ProcessorBase):
     """
     Rule Engine che applica strategie di irrigazione.
-    Usa Strategy Pattern per diverse piante.
     """
     
     def __init__(self, plant_type: Optional[str] = None):
