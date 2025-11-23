@@ -154,8 +154,8 @@ export default function Navbar({ overlay = false }) {
 
                                             {/*Aggiungo un nuovo link per accedere rapidamente alla nuova pagina di test e log*/}
                                             <Link to="/ai/pipeline-test" className={dropItem} onClick={() => setOpenAI(false)}>
-                                                Test Pipeline & Log
-                                            </Link>   
+                                                Analisi Idoneità Ambientale
+                                            </Link> 
                                         </div>
                                     )}
                                 </div>

@@ -1,13 +1,11 @@
 //Questo componente renderizza la risposta JSON della pipeline in un formato leggibile (log delle decisioni).
 
-// src/components/PipelineResultCard.jsx
 import React from 'react';
 import {
     Droplets, AlertTriangle, CheckCircle, Clock, Leaf, Thermometer, Zap, BarChart,
-    Layers, CornerDownRight, X
+    Layers, CornerDownRight, X, CalendarClock
 } from 'lucide-react';
 
-// Componente Card riutilizzabile
 const Card = ({ children, title, icon: Icon, colorClass = 'text-gray-900', bgClass = 'bg-white' }) => (
     <div className={`${bgClass} p-6 rounded-xl shadow-lg border border-gray-100 space-y-4`}>
         <h3 className={`text-xl font-bold ${colorClass} flex items-center gap-2 border-b pb-2 mb-4`}>
@@ -18,7 +16,6 @@ const Card = ({ children, title, icon: Icon, colorClass = 'text-gray-900', bgCla
     </div>
 );
 
-// Componente riga dettaglio
 const DetailRow = ({ label, value, unit, icon: Icon, iconColor = 'text-gray-500' }) => (
     <div className="flex justify-between items-center py-2 border-b border-gray-100">
         <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -26,26 +23,10 @@ const DetailRow = ({ label, value, unit, icon: Icon, iconColor = 'text-gray-500'
             <span>{label}</span>
         </div>
         <span className="font-semibold text-gray-900 text-sm">
-            {/* Formatta numeri: se intero, nessuna cifra decimale, altrimenti 2 */}
             {typeof value === 'number' ? value.toFixed(value % 1 === 0 ? 0 : 2) : value || '—'} {unit}
         </span>
     </div>
 );
-
-// Badge Priorità
-const PriorityBadge = ({ priority }) => {
-    const map = {
-        urgent: 'bg-red-500 text-white',
-        high: 'bg-orange-500 text-white',
-        medium: 'bg-yellow-100 text-yellow-800',
-        low: 'bg-green-100 text-green-800',
-    };
-    return (
-        <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase ${map[priority] || 'bg-gray-100 text-gray-800'}`}>
-            {priority}
-        </span>
-    );
-};
 
 export default function PipelineResultCard({ result, plantType }) {
     if (!result || result.status === 'error') {
@@ -62,52 +43,41 @@ export default function PipelineResultCard({ result, plantType }) {
         );
     }
 
-    // Estrazione dati per chiarezza
     const { suggestion, details, metadata } = result;
-    const cleanedData = details?.cleaned_data || {};
-    const features = details?.features || {};
-    const estimation = details?.estimation || {};
-    const anomalies = details?.anomalies || [];
-    const warnings = metadata?.warnings || [];
+    const frequency = suggestion?.frequency_estimation; // NUOVO CAMPO
 
     return (
         <div className="space-y-6">
 
-            {/* 1. RISULTATO OPERATIVO FINALE */}
-            <Card title="Suggerimento Operativo Finale" icon={Droplets} colorClass={suggestion?.should_water ? 'text-blue-600' : 'text-green-600'} bgClass="bg-white">
+            {/* 1. NUOVO: STIMA FREQUENZA E PIANIFICAZIONE (Più rilevante per il test) */}
+            <Card title="Stima Fabbisogno Idrico" icon={CalendarClock} colorClass="text-blue-700" bgClass="bg-blue-50">
                 
-                <div className={`p-4 rounded-lg ${suggestion?.should_water ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border space-y-3`}>
-                    <div className="flex justify-between items-center">
-                        <p className="text-lg font-bold">
-                            {suggestion?.should_water ? '💧 Irrigare' : '✅ Non Irrigare'}
-                        </p>
-                        <PriorityBadge priority={suggestion?.priority} />
+                {frequency ? (
+                    <div className="text-center py-2">
+                        <p className="text-sm text-blue-600 uppercase tracking-wider font-bold mb-1">Frequenza Suggerita</p>
+                        <p className="text-3xl font-extrabold text-blue-900">{frequency.detail}</p>
+                        <p className="text-sm text-blue-700 mt-2 font-medium">Impatto: {frequency.label}</p>
                     </div>
+                ) : (
+                    <p className="text-gray-500">Stima frequenza non disponibile.</p>
+                )}
 
-                    <p className="text-sm text-gray-700">{suggestion?.description}</p>
-                    
-                    <ul className="text-sm space-y-1 pt-2 border-t border-gray-100">
-                        <li>
-                            <strong className="text-gray-600">Quantità:</strong> 
-                            <span className="ml-2 font-semibold text-blue-800">
-                                {suggestion?.water_amount_liters?.toFixed(1) || 0} Litri
-                            </span>
-                        </li>
-                        <li>
-                            <strong className="text-gray-600">Timing Suggerito:</strong> 
-                            <span className="ml-2 font-semibold">{suggestion?.timing || 'Adesso'}</span>
-                        </li>
-                    </ul>
+                <div className="mt-4 grid grid-cols-2 gap-4 border-t border-blue-200 pt-4">
+                    <div>
+                        <p className="text-xs text-blue-600">Evapotraspirazione (ET0)</p>
+                        <p className="font-bold text-lg">{details.features?.evapotranspiration} mm/g</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-blue-600">Quantità Media/Turno</p>
+                        <p className="font-bold text-lg">{suggestion?.water_amount_liters} Litri</p>
+                    </div>
                 </div>
-                <p className="text-xs italic text-gray-500">
-                    Decisione finale generata dallo stage 'Action Generation'.
-                </p>
             </Card>
 
-            {/* 2. LOG: Dati Puliti e Dati Raw (Validation Stage) */}
-            <Card title={`Log Dati (Input: ${plantType.toUpperCase()})`} icon={CheckCircle} colorClass="text-green-600">
-                <h4 className="font-semibold text-gray-700 mt-2">Dati Puliti e Finali (Cleaned Data)</h4>
-                {Object.entries(cleanedData).map(([key, value]) => (
+            {/* 2. LOG: Dati Puliti */}
+            <Card title={`Analisi Input: ${plantType.toUpperCase()}`} icon={CheckCircle} colorClass="text-green-600">
+                <h4 className="font-semibold text-gray-700 mt-2">Parametri Ambientali Rilevati</h4>
+                {Object.entries(details.cleaned_data || {}).map(([key, value]) => (
                     <DetailRow
                         key={key}
                         label={key.replace('_', ' ').charAt(0).toUpperCase() + key.replace('_', ' ').slice(1)}
@@ -117,74 +87,46 @@ export default function PipelineResultCard({ result, plantType }) {
                         iconColor="text-teal-600"
                     />
                 ))}
-                
-                {warnings.length > 0 && (
-                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h5 className="flex items-center gap-2 text-sm font-medium text-yellow-800"><AlertTriangle className="h-4 w-4" /> Warning di Validazione/Clamping:</h5>
-                        <ul className="text-xs text-yellow-700 mt-1 list-disc list-inside">
-                            {warnings.map((w, i) => <li key={i}>{w}</li>)}
-                        </ul>
-                    </div>
-                )}
             </Card>
 
-            {/* 3. LOG: Feature Calcolate (Feature Engineering Stage) */}
-            <Card title="Log Features Derivate" icon={BarChart} colorClass="text-purple-600">
-                {Object.entries(features).map(([key, value]) => (
-                    <DetailRow
-                        key={key}
-                        label={key.replace('_', ' ').charAt(0).toUpperCase() + key.replace('_', ' ').slice(1)}
-                        value={value}
-                        unit={key.includes('index') ? '/100' : key === 'irrigation_urgency' ? '/10' : key.includes('transpiration') || key.includes('deficit') ? 'mm' : ''}
-                        icon={Zap}
-                        iconColor="text-purple-600"
-                    />
-                ))}
+            {/* 3. LOG: Feature Calcolate */}
+            <Card title="Metriche Calcolate (AI)" icon={BarChart} colorClass="text-purple-600">
+                <DetailRow label="Indice Stress Idrico" value={details.features?.water_stress_index} unit="/ 100" icon={Zap} iconColor="text-purple-600" />
+                <DetailRow label="Indice Comfort Climatico" value={details.features?.climate_comfort_index} unit="/ 100" icon={Zap} iconColor="text-purple-600" />
+                <DetailRow label="Deficit Idrico" value={details.features?.water_deficit} unit="mm" icon={Zap} iconColor="text-purple-600" />
+                <DetailRow label="Urgenza (Scala 0-10)" value={details.features?.irrigation_urgency} unit="" icon={Zap} iconColor="text-purple-600" />
             </Card>
 
             {/* 4. LOG: Stima e Anomalie */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* 4A. Stima Irrigazione (Estimation Stage) */}
-                <Card title="Log Stima Irrigazione" icon={Layers} colorClass="text-orange-600">
+                <Card title="Log Decisionale" icon={Layers} colorClass="text-orange-600">
                     <p className="text-sm font-semibold text-gray-800">
-                        Strategia Usata: <span className="uppercase">{estimation?.plant_type}</span>
+                        Strategia: <span className="uppercase">{details.estimation?.plant_type}</span>
                     </p>
-                    <p className="text-sm text-gray-700 border-b pb-2">
-                        <strong className="text-orange-600">Motivazione:</strong> {estimation?.reasoning}
+                    <p className="text-sm text-gray-700 border-b pb-2 my-2">
+                        <strong className="text-orange-600">Ragionamento:</strong> {details.estimation?.reasoning}
                     </p>
-                    <DetailRow label="Confidence" value={estimation?.confidence * 100} unit="%" icon={CornerDownRight} iconColor="text-orange-600" />
-                    <DetailRow label="Quantità (ml)" value={estimation?.water_amount_ml} unit="ml" icon={CornerDownRight} iconColor="text-orange-600" />
+                    <DetailRow label="Azione Calcolata" value={suggestion?.should_water ? "IRRIGARE" : "NON IRRIGARE"} icon={CornerDownRight} />
+                    <DetailRow label="Confidenza" value={details.estimation?.confidence * 100} unit="%" icon={CornerDownRight} />
                 </Card>
 
-                {/* 4B. Anomalie (Anomaly Detection Stage) */}
-                <Card title="Anomalie Rilevate" icon={AlertTriangle} colorClass={anomalies.some(a => a.severity === 'critical') ? 'text-red-600' : 'text-gray-600'}>
-                    {anomalies.length > 0 ? (
+                <Card title="Anomalie Rilevate" icon={AlertTriangle} colorClass={details.anomalies?.some(a => a.severity === 'critical') ? 'text-red-600' : 'text-gray-600'}>
+                    {(details.anomalies?.length || 0) > 0 ? (
                         <ul className="space-y-3">
-                            {anomalies.map((a, i) => (
+                            {details.anomalies.map((a, i) => (
                                 <li key={i} className={`p-3 rounded-lg border ${a.severity === 'critical' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'} text-sm`}>
                                     <div className={`font-bold uppercase ${a.severity === 'critical' ? 'text-red-700' : 'text-yellow-800'} flex items-center gap-2`}>
-                                        <AlertTriangle className="h-4 w-4" /> {a.type} ({a.severity})
+                                        <AlertTriangle className="h-4 w-4" /> {a.type}
                                     </div>
                                     <p className="text-xs mt-1 text-gray-700">{a.message}</p>
-                                    <p className="text-xs mt-1 font-medium text-gray-800">Raccomandazione: {a.recommendation}</p>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-sm text-gray-500">Nessuna anomalia rilevata nei dati o nelle features.</p>
+                        <p className="text-sm text-gray-500">Nessuna anomalia critica rilevata.</p>
                     )}
                 </Card>
             </div>
-
-            {/* 5. METADATA */}
-            <Card title="Metadati Esecuzione" icon={Clock} colorClass="text-gray-600">
-                <DetailRow label="Status" value={metadata.status} icon={CheckCircle} iconColor={metadata.status === 'success' ? 'text-green-600' : 'text-red-600'} />
-                <DetailRow label="Inizio Elaborazione" value={new Date(metadata.started_at).toLocaleTimeString('it-IT')} icon={Clock} />
-                <DetailRow label="Fine Elaborazione" value={new Date(metadata.completed_at).toLocaleTimeString('it-IT')} icon={Clock} />
-                <DetailRow label="Tempo Totale (ms)" value={new Date(metadata.completed_at).getTime() - new Date(metadata.started_at).getTime()} unit="ms" icon={Thermometer} />
-            </Card>
-
         </div>
     );
 }

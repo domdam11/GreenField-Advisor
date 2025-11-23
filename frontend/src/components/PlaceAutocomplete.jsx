@@ -67,7 +67,7 @@ export default function PlaceAutocomplete({
   onChangeText,
   onSelectPlace,
   placeholder = "Cerca città/paesino...",
-  apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+  apiKey = "AIzaSyCus9eFEbj4DsruePbc1umQOV7h-vnsBUQ",
   className = "",
   restrictCountry = "it",
   types = "(cities)",
