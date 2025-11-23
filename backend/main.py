@@ -10,6 +10,7 @@ from routers import interventionsRouter
 from routers import trefleRouter
 from routers import weatherRouter
 from routers import pipelineRouter
+from routers import aiRouter
 
 #2 RICHE AGGIUNTE PER LA CREAZIONE DEL SIMULATORE DEI DATI PROVENIENTI DAI SENSORI
 from routers import sensorRouter
@@ -52,6 +53,10 @@ app.include_router(weatherRouter.router)
 app.include_router(sensorRouter.router)
 app.include_router(imageRouter.router)
 app.include_router(pipelineRouter.router)
+
+#RIGHE AGGIUNTE IN MERITO ALLA CNN
+app.include_router(aiRouter.router)
+
 
 
 # Health
