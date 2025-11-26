@@ -27,13 +27,13 @@ async def process_sensor_data(request: PipelineRequest):
     
     La pipeline esegue:
     1. **Data Validation**: Pulisce e valida i dati
-    2. **Feature Engineering**: Calcola feature derivate
-    3. **Estimation**: Applica regole di irrigazione
+    2. **Feature Engineering**: Calcola feature derivate (SWRF, VPD, AWC)
+    3. **Estimation**: Applica regole di irrigazione specifiche per la pianta
     4. **Anomaly Detection**: Rileva condizioni anomale
-    5. **Action Generation**: Genera suggerimenti finali
+    5. **Action Generation**: Genera suggerimenti finali (Irrigazione e Concimazione)
     
     Args:
-        request: Dati sensori e tipo pianta
+        request: Dati sensori, tipo pianta e tipo terreno
         
     Returns:
         Suggerimento irrigazione con dettagli completi
@@ -80,44 +80,44 @@ async def list_supported_plants():
     Lista dei tipi di pianta supportati dalla pipeline.
     
     Returns:
-        Lista di tipi pianta con descrizione
+        Lista di tipi pianta con descrizione agronomica e range di umidità.
     """
     return {
         "plants": [
             {
                 "id": "tomato",
                 "name": "Pomodoro",
-                "description": "Preferisce suolo costantemente umido (60-80%)",
+                "description": "Solanacea esigente. Richiede un suolo costantemente umido per lo sviluppo dei frutti, ma teme i ristagni che causano marciumi.",
                 "optimal_moisture": "60-80%"
             },
             {
-                "id": "lettuce",
-                "name": "Lattuga",
-                "description": "Richiede suolo molto umido (70-85%)",
-                "optimal_moisture": "70-85%"
-            },
-            {
-                "id": "basil",
-                "name": "Basilico",
-                "description": "Suolo moderatamente umido (55-70%)",
-                "optimal_moisture": "55-70%"
+                "id": "potato",
+                "name": "Patata",
+                "description": "Tubero sensibile. Necessita di terreno fresco e umido per l'ingrossamento, ma l'eccesso d'acqua favorisce malattie fungine.",
+                "optimal_moisture": "60-75%"
             },
             {
                 "id": "pepper",
                 "name": "Peperone",
-                "description": "Irrigazione regolare moderata",
+                "description": "Simile al pomodoro ma più sensibile allo stress idrico. Richiede irrigazioni frequenti ma senza ristagni al colletto.",
                 "optimal_moisture": "55-75%"
             },
             {
-                "id": "cucumber",
-                "name": "Cetriolo",
-                "description": "Richiede umidità costante",
-                "optimal_moisture": "65-80%"
+                "id": "peach",
+                "name": "Pesca / Pesco",
+                "description": "Albero da frutto con radici profonde. Tollera brevi periodi secchi meglio delle erbacee, ma richiede acqua abbondante in fase di fruttificazione.",
+                "optimal_moisture": "55-70%"
+            },
+            {
+                "id": "grape",
+                "name": "Uva / Vite",
+                "description": "Coltura resistente e rustica. Preferisce suoli tendenzialmente asciutti; l'eccesso idrico riduce la qualità dell'uva e favorisce malattie.",
+                "optimal_moisture": "30-50%"
             },
             {
                 "id": "generic",
                 "name": "Generica",
-                "description": "Strategia generica per piante non specificate",
+                "description": "Strategia bilanciata per piante non specificate. Mantiene un livello di umidità medio standard.",
                 "optimal_moisture": "50-70%"
             }
         ]

@@ -1,29 +1,21 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from typing import Optional
 from ai.cnn_service import cnn_classifier
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
-@router.post("/analyze-health", summary="Analisi Salute Pianta (CNN)")
-async def analyze_health(file: UploadFile = File(...)):
-    """
-    Riceve un'immagine, la analizza con il modello addestrato e restituisce:
-    - Etichetta (es. Tomato Healthy)
-    - Confidenza
-    - Consiglio operativo
-    """
+@router.post("/analyze-health", summary="Analisi Salute Pianta")
+async def analyze_health(
+    file: UploadFile = File(...),
+    plant_type: Optional[str] = Form(None) # 🟢 Riceve la specie dal frontend
+):
     if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Il file caricato non è un'immagine valida.")
+        raise HTTPException(status_code=400, detail="File non valido")
     
     try:
-        # Leggi il file in memoria
         image_data = await file.read()
-        
-        # Esegui la predizione
-        result = cnn_classifier.predict_health(image_data)
-        
-        return {
-            "status": "success",
-            "analysis": result
-        }
+        # Passa la specie al servizio per il filtro
+        result = cnn_classifier.predict_health(image_data, plant_context=plant_type)
+        return {"status": "success", "analysis": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore analisi AI: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
