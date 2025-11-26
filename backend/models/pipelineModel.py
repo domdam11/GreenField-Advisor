@@ -9,7 +9,6 @@ class SensorDataInput(BaseModel):
     rainfall: Optional[float] = Field(0, ge=0)
     
     class Config:
-        # Pydantic V2 config
         json_schema_extra = {
             "example": {
                 "soil_moisture": 45.0,
@@ -29,7 +28,7 @@ class IrrigationSuggestion(BaseModel):
     timing: str
     priority: str
     
-    # 🟢 CAMPI FONDAMENTALI PER VISUALIZZARE I NUOVI DATI
+    #CAMPI NECESSARI PER LA FERTILIZZAZIONE
     frequency_estimation: Optional[Dict[str, str]] = Field(None, description="Stima frequenza")
     fertilizer_estimation: Optional[Dict[str, str]] = Field(None, description="Stima concimazione")
 
@@ -41,7 +40,7 @@ class PipelineDetailsResponse(BaseModel):
     """
     cleaned_data: Optional[Dict[str, Any]] = None
     
-    # 🟢 IMPORTANTE: Lasciare questo come Dict generico permette di passare 
+    #IMPORTANTE: Lasciare questo come Dict generico permette di passare 
     # soil_behavior, vpd, awc_percentage senza doverli dichiarare uno per uno.
     features: Optional[Dict[str, Any]] = None 
     
@@ -65,7 +64,7 @@ class PipelineResponse(BaseModel):
 class PipelineRequest(BaseModel):
     sensor_data: SensorDataInput
     plant_type: Optional[str] = "generic"
-    soil_type: Optional[str] = None # Usato per i test, opzionale
+    soil_type: Optional[str] = None
 
 class HealthCheckResponse(BaseModel):
     status: str

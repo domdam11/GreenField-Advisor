@@ -10,6 +10,8 @@ class PlantBase(BaseModel):
     locationCountryCode: Optional[str] = None
     description: Optional[str] = None
     soil: Optional[str] = Field(None, description="Tipologia di terreno (es. Argilloso, Sabbioso, Lavorabile)") 
+    healthStatus: Optional[str] = Field(None, description="Stato salute (es. Healthy, Bacterial Spot)")
+    healthAdvice: Optional[str] = Field(None, description="Consiglio specifico per la malattia")
     
     # derivati
     wateringIntervalDays: Optional[int] = 3
