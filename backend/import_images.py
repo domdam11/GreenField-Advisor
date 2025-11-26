@@ -260,10 +260,10 @@ if __name__ == "__main__":
     """)
     
     # PERCORSO HARDCODED - Modifica con il tuo path!
-    DEFAULT_PATH = "/Users/maure/Desktop/PROGETTO MONGIELLO "
+    DEFAULT_PATH = "/Users/maure/Desktop/PROGETTO MONGIELLO /PlantVillage"
     
     print("Opzioni:")
-    print(f"1. Importa immagini da: {DEFAULT_PATH}")
+    print(f"1. Importa immagini da:{DEFAULT_PATH}")
     print("2. Importa da percorso personalizzato")
     print("3. Pulisci database (ELIMINA TUTTO)")
     print("4. Esci")
