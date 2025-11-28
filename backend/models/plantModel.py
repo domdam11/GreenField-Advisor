@@ -38,7 +38,7 @@ class PlantBase(BaseModel):
     trefleSlug: Optional[str] = None
     trefleScientificName: Optional[str] = None
     trefleCommonName: Optional[str] = None
-    trefleImageUrl: Optional[str] = None  #  usato come fallback immagine
+    trefleImageUrl: Optional[str] = None  
 
     # snapshot compatto
     trefleData: Optional[Dict[str, Any]] = None
