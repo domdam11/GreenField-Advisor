@@ -15,7 +15,7 @@ const refreshClient = axios.create({
   withCredentials: true,
 });
 
-// 🔹 Helper exportato per il silent refresh all’avvio
+//Helper exportato per il silent refresh all’avvio
 export const refreshToken = () => refreshClient.post("/api/utenti/refresh", {});
 
 //Supplier per leggere/salvare il token dall'AuthContext

@@ -8,7 +8,7 @@ export async function uploadAvatar(file) {
   const { data } = await api.post("/api/utenti/me/avatar", fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return data; // { avatarUrl, avatarThumbUrl }
+  return data; 
 }
 
 // Upload immagine pianta
@@ -19,7 +19,7 @@ export async function uploadPlantImage(plantId, file) {
   const { data } = await api.post(`/api/piante/${plantId}/image`, fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return data; // { imageUrl, imageThumbUrl }
+  return data; 
 }
 
 

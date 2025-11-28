@@ -6,7 +6,6 @@ export async function processPipeline(arg1, arg2 = "generic") {
 
   // Controllo se il primo argomento è già il payload completo (contiene la chiave sensor_data)
   if (arg1.sensor_data) {
-      // Modalità Nuova (quella che usa PipelineTestPage)
       payload = arg1;
   } else {
       // Modalità Vecchia (compatibilità)
@@ -15,8 +14,6 @@ export async function processPipeline(arg1, arg2 = "generic") {
         plant_type: arg2,
       };
   }
-
-  // Debug: controlla nella console del browser cosa stiamo inviando
   console.log("[API] Invio Pipeline:", payload);
 
   const { data } = await api.post("/api/pipeline/process", payload);

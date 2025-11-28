@@ -39,7 +39,6 @@ export async function deleteImage(imageId) {
 }
 
 /**
- * 🟢 FUNZIONE MANCANTE: Diagnosi Salute Pianta
  * Invia l'immagine alla CNN per analizzare se è sana o malata.
  */
 export async function diagnosePlantHealth(file, plantType = null) {
