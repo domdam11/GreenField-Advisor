@@ -18,7 +18,7 @@ class ImageController:
     
     def __init__(self, collection: Collection):
         self.collection = collection
-        print(f"✅ ImageController inizializzato con collection: {collection.name}")
+        print(f" ImageController inizializzato con collection: {collection.name}")
     
     def validate_objectid(self, imageid: str) -> ObjectId:
         """Valida e converte string a ObjectId"""
@@ -78,11 +78,11 @@ class ImageController:
                 try:
                     os.remove(filepath)
                     deleted_files.append(filepath)
-                    print(f"✅ File eliminato: {filepath}")
+                    print(f" File eliminato: {filepath}")
                 except Exception as e:
                     error_msg = f"Errore nell'eliminare {filepath}: {str(e)}"
                     errors.append(error_msg)
-                    print(f"❌ {error_msg}")
+                    print(f"{error_msg}")
         
         return deleted_files, errors
     
@@ -118,7 +118,7 @@ class ImageController:
         # Salva su filesystem
         try:
             saved_paths = self.save_image_to_filesystem(imagedata)
-            print(f"✅ Immagine salvata: {saved_paths['url']}")
+            print(f"Immagine salvata: {saved_paths['url']}")
         except Exception as e:
             raise HTTPException(
                 status_code=500,
@@ -150,7 +150,7 @@ class ImageController:
         try:
             result = self.collection.insert_one(image_doc)
             imageid = str(result.inserted_id)
-            print(f"✅ Metadata salvato su MongoDB - ID: {imageid}")
+            print(f" Metadata salvato su MongoDB - ID: {imageid}")
         except Exception as e:
             # Rollback: elimina file fisici
             self.delete_image_files(saved_paths["abs"], saved_paths["absThumb"])
@@ -265,7 +265,7 @@ class ImageController:
         # Elimina da MongoDB
         try:
             self.collection.delete_one({"_id": objectid})
-            print(f"✅ Record MongoDB eliminato: {imageid}")
+            print(f" Record MongoDB eliminato: {imageid}")
         except Exception as e:
             raise HTTPException(
                 status_code=500,
@@ -285,7 +285,7 @@ class ImageController:
         """Ottieni statistiche aggregate"""
         
         try:
-            # Conta totale
+            # Conteggio totale documenti
             total_images = self.collection.count_documents({})
             processed_images = self.collection.count_documents({"processed": True})
             unprocessed_images = self.collection.count_documents({"processed": False})
@@ -332,7 +332,7 @@ class ImageController:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         
-        # Prepara aggiornamento
+        # Prepara aggiornamento dei dati
         update_data = {
             "processed": True,
             "processedtimestamp": datetime.utcnow()

@@ -1,4 +1,3 @@
-# backend/controllers/sensor_controller.py
 from fastapi import HTTPException
 from database import db
 from models.sensorModel import SensorReading, SensorReadingResponse

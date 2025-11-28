@@ -8,47 +8,44 @@ logger = logging.getLogger(__name__)
 class WeatherController:
     """
     Gestisce il recupero dei dati meteo da Open-Meteo.
-    Include logica avanzata per pulizia nomi città e fallback.
+    Include Geocoding (Nome -> Coord) e Reverse Geocoding (Coord -> Nome).
     """
     
     async def get_weather_data(self, city: str = None, lat: float = None, lon: float = None):
         
         location_name = "Posizione sconosciuta"
         
-        # 1. GEOCODING (Se non abbiamo le coordinate)
+        # 1. DETERMINA COORDINATE E NOME
         if lat is None or lon is None:
+            # CASO A: Abbiamo solo il nome (es. profilo utente)
             if not city:
                 raise HTTPException(status_code=400, detail="Coordinate o Città non specificate")
 
-            # Tentativo 1: Pulizia Standard (Rimuove numeri e CAP)
-            # Es: "73014 Gallipoli LE, Italia" -> "Gallipoli LE"
+            # Pulizia nome città
             city_clean = city.split(',')[0]
             city_clean = re.sub(r'\d+', '', city_clean).strip()
             
-            logger.info(f"🌤️  Meteo: Cerco città '{city_clean}' (Originale: '{city}')")
+            coords = await self._fetch_coords_from_name(city_clean)
             
-            coords = await self._fetch_coords(city_clean)
-            
-            # Tentativo 2: Fallback "Solo prima parola" (Se il primo fallisce)
-            # Es: Se "Gallipoli LE" fallisce, prova "Gallipoli"
+            # Fallback prima parola
             if not coords and len(city_clean.split()) > 1:
                 city_simple = city_clean.split()[0]
-                logger.info(f"⚠️  Meteo: Fallito '{city_clean}', riprovo con '{city_simple}'")
-                coords = await self._fetch_coords(city_simple)
+                coords = await self._fetch_coords_from_name(city_simple)
 
             if not coords:
-                logger.error(f"❌ Meteo: Città '{city}' non trovata neanche dopo pulizia.")
                 raise HTTPException(status_code=404, detail=f"Città '{city}' non trovata")
                 
             lat = coords["latitude"]
             lon = coords["longitude"]
             location_name = coords["name"]
         else:
-            location_name = city or "Posizione GPS"
+            # CASO B: Abbiamo le coordinate (es. GPS o Pianta)
+            # CHE SI FA: Facciamo Reverse Geocoding per trovare il nome reale
+            found_name = await self._fetch_name_from_coords(lat, lon)
+            location_name = found_name if found_name else (city or "Posizione Rilevata")
 
         # 2. METEO (Open-Meteo Forecast)
         try:
-            # Assicuriamoci che lat/lon siano float
             lat = float(lat)
             lon = float(lon)
             
@@ -65,17 +62,14 @@ class WeatherController:
                 wx_data = wx_res.json()
             
             if "error" in wx_data:
-                logger.error(f"❌ Errore API Meteo: {wx_data}")
                 raise HTTPException(status_code=502, detail="Errore provider meteo")
 
             current = wx_data.get("current", {})
 
-            # Normalizzazione Dati
-            # Suolo (m3/m3 -> %)
+            # Normalizzazione
             raw_soil = current.get("soil_moisture_0_to_7cm")
             soil_pct = min(100.0, max(0.0, (raw_soil or 0.0) * 100))
 
-            # Luce (W/m2 -> Lux approx)
             raw_rad = current.get("shortwave_radiation")
             light_lux = (raw_rad or 0.0) * 120.0
 
@@ -90,11 +84,11 @@ class WeatherController:
             }
 
         except Exception as e:
-            logger.exception(f"❌ Eccezione Meteo: {str(e)}")
+            logger.exception(f" Eccezione Meteo: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Errore recupero meteo: {str(e)}")
 
-    async def _fetch_coords(self, query):
-        """Helper interno per geocoding"""
+    async def _fetch_coords_from_name(self, query):
+        """Geocoding: Nome -> Coordinate"""
         try:
             url = "https://geocoding-api.open-meteo.com/v1/search"
             params = {"name": query, "count": 1, "language": "it", "format": "json"}
@@ -106,5 +100,23 @@ class WeatherController:
         except Exception as e:
             logger.error(f"Geocoding error: {e}")
         return None
+
+    async def _fetch_name_from_coords(self, lat, lon):
+        """ Reverse Geocoding: Coordinate -> Nome Città"""
+        try:
+            url = "https://api.bigdatacloud.net/data/reverse-geocode-client"
+            params = {
+                "latitude": lat,
+                "longitude": lon,
+                "localityLanguage": "it"
+            }
+            async with httpx.AsyncClient() as client:
+                res = await client.get(url, params=params, timeout=3.0)
+                data = res.json()
+                return data.get("city") or data.get("locality") or data.get("principalSubdivision")
+                
+        except Exception as e:
+            logger.error(f"Reverse Geocoding error: {e}")
+            return None
 
 weatherController = WeatherController()

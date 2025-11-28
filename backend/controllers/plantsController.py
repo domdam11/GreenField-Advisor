@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from bson import ObjectId
 from fastapi import HTTPException
@@ -26,9 +26,11 @@ def _safe_int(v, default=None):
     try: return int(v)
     except: return default
 
-# ... (Funzioni CRUD list_plants, get_plant, ecc. rimangono UGUALI a prima - per brevità non le copio tutte, ma assicurati di averle nel file. Se vuoi copio tutto, dimmelo!)
-# ... PER SICUREZZA COPIO LE FUNZIONI BASE QUI SOTTO ...
+def _apply_trefle_enrichment(base_doc: Dict[str, Any], trefle_id: Optional[int]) -> Dict[str, Any]:
+    if not TREFLE_AVAILABLE or not trefle_id: return base_doc
+    return base_doc
 
+# --- CRUD (Invariato) ---
 def list_plants(user_id: str) -> List[dict]:
     cursor = plants_collection.find({"userId": _oid(user_id)}).sort("createdAt", -1)
     return [serialize_plant(doc) for doc in cursor]
@@ -40,23 +42,17 @@ def get_plant(user_id: str, plant_id: str) -> Optional[dict]:
 def create_plant(user_id: str, data: PlantCreate) -> dict:
     now = datetime.utcnow()
     base_doc = {
-        "userId": _oid(user_id),
-        "name": data.name,
-        "species": data.species,
-        "location": data.location,
-        "description": data.description,
+        "userId": _oid(user_id), "name": data.name, "species": data.species,
+        "location": data.location, "description": data.description,
         "soil": getattr(data, "soil", None),
         "healthStatus": getattr(data, "healthStatus", None),
         "healthAdvice": getattr(data, "healthAdvice", None),
         "wateringIntervalDays": getattr(data, "wateringIntervalDays", 3),
         "sunlight": getattr(data, "sunlight", "pieno sole"),
         "lastWateredAt": None,
-        "imageUrl": data.imageUrl,
-        "imageThumbUrl": getattr(data, "imageThumbUrl", None),
-        "geoLat": getattr(data, "geoLat", None),
-        "geoLng": getattr(data, "geoLng", None),
-        "placeId": getattr(data, "placeId", None),
-        "addressLocality": getattr(data, "addressLocality", None),
+        "imageUrl": data.imageUrl, "imageThumbUrl": getattr(data, "imageThumbUrl", None),
+        "geoLat": getattr(data, "geoLat", None), "geoLng": getattr(data, "geoLng", None),
+        "placeId": getattr(data, "placeId", None), "addressLocality": getattr(data, "addressLocality", None),
         "createdAt": now, "updatedAt": now,
     }
     res = plants_collection.insert_one(base_doc)
@@ -67,10 +63,11 @@ def update_plant(user_id: str, plant_id: str, data: PlantUpdate) -> Optional[dic
     existing = plants_collection.find_one({"_id": _oid(plant_id), "userId": _oid(user_id)})
     if not existing: return None
     update_fields = {}
-    # Lista campi aggiornabili
     for field in ["name", "species", "location", "description", "imageUrl", "imageThumbUrl", "soil", "geoLat", "geoLng", "placeId", "addressLocality", "healthStatus", "healthAdvice"]:
         val = getattr(data, field, None)
         if val is not None: update_fields[field] = val
+    if getattr(data, "wateringIntervalDays", None) is not None:
+        update_fields["wateringIntervalDays"] = _safe_int(data.wateringIntervalDays, 3)
     update_fields["updatedAt"] = datetime.utcnow()
     plants_collection.update_one({"_id": _oid(plant_id), "userId": _oid(user_id)}, {"$set": update_fields})
     return serialize_plant(plants_collection.find_one({"_id": _oid(plant_id)}))
@@ -91,7 +88,7 @@ def remove_plant_image(user_id: str, plant_id: str) -> Optional[dict]:
     return serialize_plant(plants_collection.find_one({"_id": _oid(plant_id)}))
 
 
-# --- 🚀 AI & METEO (Funzione Corretta e Robusta) ---
+# --- AI & METEO ---
 
 async def calculate_irrigation_for_plant(user_id: str, plant_id: str) -> Dict[str, Any]:
     try: obj_id = _oid(plant_id)
@@ -100,66 +97,70 @@ async def calculate_irrigation_for_plant(user_id: str, plant_id: str) -> Dict[st
     plant = plants_collection.find_one({"_id": obj_id, "userId": _oid(user_id)})
     if not plant: raise HTTPException(status_code=404, detail="Pianta non trovata")
 
-    # Dati base
     raw_species = plant.get("species", "generic") or "generic"
     soil_type = plant.get("soil", "universale") or "universale"
     location_name = plant.get("location") or plant.get("addressLocality")
+    lat, lng = plant.get("geoLat"), plant.get("geoLng")
     
-    # Recupera coordinate e converti a float (Importante!)
-    lat = plant.get("geoLat")
-    lng = plant.get("geoLng")
-    try:
-        if lat is not None: lat = float(lat)
-        if lng is not None: lng = float(lng)
-    except ValueError:
-        lat, lng = None, None
+    # Recupera intervallo di irrigazione
+    interval_days = _safe_int(plant.get("wateringIntervalDays"), 3)
 
-    # Default Sensor Data (Se il meteo fallisce, userà questo e vedrai 20°C)
+    
+    # Cerchiamo interventi fatti negli ultimi 'interval_days'
+    water_added_in_cycle = 0.0
+    try:
+        # Finestra temporale: Adesso - Giorni Intervallo
+        start_date = datetime.now(timezone.utc) - timedelta(days=interval_days)
+        
+        interventions = list(interventions_collection.find({
+            "plantId": obj_id, 
+            "type": "irrigazione"
+        }))
+        
+        for i in interventions:
+            exec_time = i.get("executedAt")
+            if not exec_time: continue
+            
+            # Parsing data sicuro
+            if isinstance(exec_time, str):
+                try: dt = datetime.fromisoformat(exec_time.replace("Z", "+00:00"))
+                except: continue
+            else: dt = exec_time
+            
+            if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+            
+            
+            if dt >= start_date:
+                liters = float(i.get("liters", 0))
+                water_added_in_cycle += liters
+        
+        print(f"Bilancio Idrico ({raw_species}): Intervallo {interval_days}gg. Versati {water_added_in_cycle:.1f}L nel periodo.")
+
+    except Exception as e:
+        print(f"[WARN] Errore calcolo water budget: {e}")
+
+    # Dati per Pipeline
     sensor_data = {
         "temperature": 20.0, "humidity": 50.0, "rainfall": 0.0, 
-        "light": 10000.0, "soil_moisture": 40.0, 
+        "light": 10000.0, "soil_moisture": 50.0, 
         "soil": soil_type,
         "plant_type": raw_species, 
-        "species": raw_species 
+        "species": raw_species,
+        # Usiamo questo campo per passare l'acqua del ciclo intero
+        "water_added_24h": water_added_in_cycle 
     }
 
-    # 🟢 METEO: Priorità alle coordinate
-    weather_success = False
-    if lat is not None and lng is not None:
+    # Meteo
+    if lat and lng:
         try:
-            print(f"🌍 Meteo per {plant_id}: Uso coordinate ({lat}, {lng})")
-            wx = await weatherController.get_weather_data(city=location_name, lat=lat, lon=lng)
+            wx = await weatherController.get_weather_data(city=location_name, lat=float(lat), lon=float(lng))
             sensor_data.update(wx)
-            weather_success = True
-        except Exception as e: 
-            print(f"⚠️ Meteo coordinate fallito: {e}")
-
-    # Se coordinate falliscono o mancano, prova con il nome città
-    if not weather_success and location_name:
+        except: pass
+    elif location_name:
         try:
-            print(f"🌍 Meteo per {plant_id}: Uso nome città '{location_name}'")
             wx = await weatherController.get_weather_data(city=location_name)
             sensor_data.update(wx)
-            weather_success = True
-        except Exception as e: 
-            print(f"❌ Meteo nome città fallito: {e}")
-
-    if not weather_success:
-        print(f"🚨 ATTENZIONE: Meteo non disponibile per pianta {plant_id}. Uso valori default (20°C).")
-
-    # 🟢 SMART SENSOR (Override se irrigato di recente)
-    last_watered = plant.get("lastWateredAt")
-    if last_watered:
-        try:
-            if isinstance(last_watered, str):
-                 last_watered = datetime.fromisoformat(last_watered.replace("Z", "+00:00"))
-            if last_watered.tzinfo is None:
-                 last_watered = last_watered.replace(tzinfo=timezone.utc)
-            
-            diff_hours = (datetime.now(timezone.utc) - last_watered).total_seconds() / 3600
-            if diff_hours < 24: sensor_data["soil_moisture"] = 95.0
-            elif diff_hours < 48: sensor_data["soil_moisture"] = max(sensor_data["soil_moisture"], 70.0)
-        except Exception: pass
+        except: pass
 
     # Mappatura
     pt = raw_species.lower()
@@ -169,7 +170,7 @@ async def calculate_irrigation_for_plant(user_id: str, plant_id: str) -> Dict[st
     elif "pesca" in pt or "peach" in pt: mapped = "peach"
     elif "uva" in pt or "grape" in pt: mapped = "grape"
     elif "peperone" in pt or "pepper" in pt: mapped = "pepper"
-    
+
     pipeline = PipelineManager(plant_type=mapped)
     result = pipeline.process(sensor_data)
 

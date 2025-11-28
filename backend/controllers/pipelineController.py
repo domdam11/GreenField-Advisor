@@ -18,7 +18,7 @@ class PipelineController:
     SUPPORTED_PLANTS = ["tomato", "potato", "peach", "grape", "pepper", "generic"]
     
     def __init__(self):
-        logger.info("✅ PipelineController inizializzato")
+        logger.info(" PipelineController inizializzato")
         
     def process_sensor_data(self, request: PipelineRequest) -> PipelineResponse:
         try:

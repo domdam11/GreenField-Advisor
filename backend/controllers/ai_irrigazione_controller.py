@@ -3,8 +3,8 @@ from fastapi import HTTPException
 
 from utils.ai_inputs_aggregator import get_inputs as aggregate_inputs
 from utils.ai_irrigation_service import compute as compute_irrigation
-from utils.weather_service import get_weather  # fallback leggero
-from utils.ai_explainer_service import explain_irrigation  # LLM spiegazione
+from utils.weather_service import get_weather  
+from utils.ai_explainer_service import explain_irrigation  
 
 
 def compute_for_plant(plant: dict):
@@ -36,7 +36,7 @@ def compute_for_plant(plant: dict):
         fallback = get_weather(plant["geoLat"], plant["geoLng"]) or {}
         wx = {**wx, **fallback}
 
-    # Chiavi base per la Card (non toccare: la UI si aspetta questi)
+    # Chiavi base per la Card
     card_weather = {
         "temp": wx.get("temp"),
         "humidity": wx.get("humidity"),
@@ -44,7 +44,7 @@ def compute_for_plant(plant: dict):
         "soilMoistureApprox": wx.get("soilMoistureApprox"),
         "soilMoisture0to7cm": wx.get("soilMoisture0to7cm"),
     }
-    # meta.weather = full (anche et0/vento/radiazione/precipDaily)
+    
     meta_weather = {**wx, **card_weather}
 
     # 3) Decisione fuzzy (usa wx normalizzato)
@@ -70,7 +70,6 @@ def compute_for_plant(plant: dict):
             "rainNext24h": card_weather["rainNext24h"],
             "temp": card_weather["temp"],
             "humidity": card_weather["humidity"],
-            # soil usato dal fuzzy (converge da 0-7cm o approx dentro ai_utils)
             "soilMoisture": (decision.get("signals") or {}).get("soilMoisture"),
             "soilMoistureApprox": card_weather["soilMoistureApprox"],
             "soilMoisture0to7cm": card_weather["soilMoisture0to7cm"],
@@ -78,14 +77,14 @@ def compute_for_plant(plant: dict):
             "hadGeo": bool(plant.get("geoLat") and plant.get("geoLng")),
         },
 
-        # meteo per la Card (sintetico)
+        # meteo per la Card
         "weather": card_weather,
 
         # meta per il Drawer (completo)
         "meta": {
-            "weather": meta_weather,     # include et0 / vento / radiazione / precipDaily (se presenti)
+            "weather": meta_weather,     
             "profile": agg.get("profile"),
-            "sources": agg.get("raw"),   # raw: nasa/openmeteo/soil
+            "sources": agg.get("raw"),   
             "geo": {
                 "lat": plant.get("geoLat"),
                 "lng": plant.get("geoLng"),
@@ -102,10 +101,8 @@ def compute_for_plant(plant: dict):
             "error": llm.get("error"),
         },
 
-        # comodo: esportiamo anche 'tech' top-level (mirror di meta.fuzzy)
         "tech": decision.get("tech"),
 
-        # compatibilità per vecchie Card che leggevano _debug.weather
         "_debug": {
             "weather": meta_weather,
             "profile": agg.get("profile"),

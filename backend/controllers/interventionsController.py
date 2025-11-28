@@ -29,9 +29,8 @@ def _parse_dt(dt: Optional[Union[str, datetime]]) -> Optional[datetime]:
     if isinstance(dt, datetime):
         return dt
     try:
-        # Normalizza "Z"
         dt2 = datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
-        # Se vuoi togliere timezone ed usare native UTC:
+        
         return dt2.astimezone(timezone.utc).replace(tzinfo=timezone.utc)
     except Exception:
         return None
@@ -65,7 +64,7 @@ def _update_plant_denorm(user_id: str, plant_id: str):
     uid = _oid(user_id)
     pid = _oid(plant_id)
 
-    # Ultima irrigazione (prefer executedAt, poi createdAt)
+    # Ultima irrigazione
     last_irrig = interventions_collection.find_one(
         {"userId": uid, "plantId": pid, "type": "irrigazione", "status": "done"},
         sort=[("executedAt", -1), ("createdAt", -1)]
@@ -79,7 +78,7 @@ def _update_plant_denorm(user_id: str, plant_id: str):
     )
     lastFertilizedAt = (last_fert.get("executedAt") or last_fert.get("createdAt")) if last_fert else None
 
-    # Prossimo pianificato (dal NOW in poi)
+    # Prossimo pianificato (dall'ultima irrigazione in poi)
     now = datetime.now(timezone.utc)
     next_plan = interventions_collection.find_one(
         {"userId": uid, "plantId": pid, "status": "planned", "plannedAt": {"$gte": now}},
@@ -132,12 +131,12 @@ def create_intervention(user_id: str, plant_id: str, data: InterventionCreate) -
     doc = {
         "userId": uid,
         "plantId": pid,
-        "type": data.type,                 # "irrigazione" | "concimazione" | "potatura" | "altro"
-        "status": data.status,             # "planned" | "done" | "skipped" | "canceled"
+        "type": data.type,                 
+        "status": data.status,             
         "notes": data.notes,
-        "liters": data.liters,             # solo per irrigazione (opzionale)
-        "fertilizerType": data.fertilizerType,  # per concimazione (opzionale)
-        "dose": data.dose,                 # per concimazione (opzionale)
+        "liters": data.liters,             
+        "fertilizerType": data.fertilizerType,  
+        "dose": data.dose,                 
         "executedAt": now,
         "plannedAt": planned_at,
         "createdAt": now,
@@ -226,7 +225,6 @@ def patch_intervention(user_id: str, inter_id: str, data: InterventionUpdate) ->
     interventions_collection.update_one({"_id": iid, "userId": uid}, {"$set": patch})
     updated = interventions_collection.find_one({"_id": iid, "userId": uid})
 
-    # denorm update: usa plantId dalla doc aggiornata
     pid = str(updated["plantId"])
     _update_plant_denorm(user_id, pid)
 
@@ -243,7 +241,6 @@ def delete_intervention(user_id: str, inter_id: str) -> bool:
 
     res = interventions_collection.delete_one({"_id": iid, "userId": uid})
     if res.deleted_count == 1:
-        # aggiorna denorm della pianta
         pid = str(doc["plantId"])
         _update_plant_denorm(user_id, pid)
         return True

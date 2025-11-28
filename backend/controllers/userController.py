@@ -32,16 +32,7 @@ def serialize_user_public(doc: dict) -> dict:
         "interventionsToday": doc.get("interventionsToday", 0),
         "avatarUrl": doc.get("avatarUrl"),
         "avatarThumbUrl": doc.get("avatarThumbUrl"),
-        # altri campi se vuoi:
-        # "sesso": doc.get("sesso"),
-        # "dataNascita": doc.get("dataNascita"),
-        # "attivo": doc.get("attivo"),
-        # "dataRegistrazione": doc.get("dataRegistrazione"),
     }
-
-
-# UTILS PASSWORD->  INDICA LA PASSWORD PER LA REGISTRAZIONE DELL'UTENTE, STO MODIFICANDO LALUNGHEZZA DELLA PASSWORD NELLO SPECIFICO
-
 
 #INDICA LA LUNGHEZZA MASSIMA DELLA PASSWORD ACCETTATA DA bycrypt
 BCRYPT_MAX_LENGTH = 72 #indica la lunghezza della password in bytes
@@ -49,7 +40,6 @@ BCRYPT_MAX_LENGTH = 72 #indica la lunghezza della password in bytes
 
 def hash_password(password: str) -> str:
     # CORREZIONE ESSENZIALE: Tronca la password a BCRYPT_MAX_LENGTH (72 bytes)
-    # Questo risolve l'errore ValueError
     truncated_password = password[:BCRYPT_MAX_LENGTH]
     return pwd_context.hash(truncated_password)
 
@@ -72,7 +62,6 @@ def create_refresh_token(data: dict, days: int = 7):
 
 
 # REGISTER
-
 def register_user(user: dict):
 
     if len(user['password'].encode('utf-8')) > 72:
@@ -97,7 +86,6 @@ def register_user(user: dict):
         "ruolo": "cliente",
         "attivo": True,
         "dataRegistrazione": datetime.utcnow(),
-        # inizializza avatar a None
         "avatarUrl": None,
         "avatarThumbUrl": None,
         "avatarRelPath": None,
@@ -209,7 +197,7 @@ def get_me(user_id: str) -> dict:
         "executedAt": {"$gte": start, "$lte": end}
     })
 
-    # Aggiungi questi dati al documento utente
+    
     user["plantCount"] = plant_count
     user["interventionsToday"] = irrigations_today
 
