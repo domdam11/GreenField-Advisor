@@ -12,7 +12,6 @@ _SOIL_TTL_SECONDS = int(os.getenv("SOIL_TTL_SECONDS", "1800"))          # 30 min
 _SOIL_GRID_PRECISION = int(os.getenv("SOIL_GRID_PRECISION", "2"))       # 0.01° ≈ ~1km
 
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
-# Variabili ERA5-Land esposte da Open-Meteo (unità: m3/m3)
 HOURLY_VARS = "soil_moisture_0_to_7cm,soil_moisture_7_to_28cm"
 
 def _grid_key(lat: float, lng: float, precision: int = None) -> str:
@@ -55,7 +54,6 @@ def _to_percent(vol: Optional[float]) -> Optional[float]:
     """
     if not isinstance(vol, (int, float)):
         return None
-    # Alcune reanalisi possono dare valori > 1 in particolari condizioni → clamp
     pct = max(0.0, min(100.0, float(vol) * 100.0))
     return round(pct, 1)
 

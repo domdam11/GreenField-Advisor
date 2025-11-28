@@ -1,8 +1,8 @@
-# backend/utils/test_fao_profile.py
+
 from fao_profile_service import get_profile
 
 def test(species, category, stage):
-    print(f"\n🌱 SPECIE: {species or 'N/D'}, categoria: {category or 'N/D'}, stadio: {stage or 'N/D'}")
+    print(f"\n SPECIE: {species or 'N/D'}, categoria: {category or 'N/D'}, stadio: {stage or 'N/D'}")
     profilo = get_profile(species, category, stage)
     for k, v in profilo.items():
         print(f"  {k}: {v}")

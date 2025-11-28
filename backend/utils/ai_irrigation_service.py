@@ -1,4 +1,3 @@
-# backend/utils/ai_irrigation_service.py
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 import math

@@ -62,7 +62,7 @@ def get_weather(lat: float, lng: float) -> Optional[Dict[str, Any]]:
         dailyTempMin, dailyTempMax, precipDaily
       }
     """
-    # Guardia se lat/lng non validi
+    #Verifica: lat/lng non validi
     if lat is None or lng is None:
         return None
 

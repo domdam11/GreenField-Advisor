@@ -9,7 +9,7 @@ Estrae parametri agronomici per una pianta in base alla specie e stadio:
 - soilTexture: tipo di suolo indicativo
 """
 
-# Fallback se pyfao56 non trova la specie
+
 DEFAULTS_BY_CATEGORY = {
     "erbacea":  {"kc": {"initial": 0.7, "mid": 1.05, "late": 0.9},  "zr": 0.25, "p": 0.45, "soilTexture": "limoso"},
     "ortivo":   {"kc": {"initial": 0.7, "mid": 1.1,  "late": 0.95}, "zr": 0.30, "p": 0.45, "soilTexture": "limoso"},

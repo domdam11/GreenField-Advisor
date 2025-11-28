@@ -75,7 +75,7 @@ def _fallback_text(*, plant: Dict[str, Any], agg: Dict[str, Any], decision: Dict
     rain = meta_wx.get("rainNext24h") if meta_wx.get("rainNext24h") is not None else meta_wx.get("precipDaily")
     soil = meta_wx.get("soilMoisture0to7cm") if meta_wx.get("soilMoisture0to7cm") is not None else meta_wx.get("soilMoistureApprox")
 
-    # ETc ~ ET0 * Kc
+    
     etc = None
     if isinstance(et0, (int, float)) and isinstance(kc, (int, float)):
         etc = et0 * kc

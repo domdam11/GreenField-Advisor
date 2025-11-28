@@ -39,7 +39,7 @@ def save_image_bytes(
     root = Path(settings.UPLOAD_DIR).resolve()
     _ensure_dir(root)
 
-    # Sottocartella (es. "plants/<userId>/<plantId>")
+    
     target_dir = (root / subdir).resolve()
     _ensure_dir(target_dir)
 
@@ -68,7 +68,7 @@ def save_image_bytes(
     thumb_path = target_dir / thumb_name
     th_img.save(thumb_path, format="WEBP", quality=webp_quality, method=6)
 
-    # Percorsi relativi (rispetto alla root "/uploads")
+    # Percorsi relativi
     rel_main = f"uploads/{subdir}/{main_name}"
     rel_thumb = f"uploads/{subdir}/{thumb_name}"
 

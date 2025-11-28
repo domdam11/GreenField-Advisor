@@ -1,4 +1,4 @@
-# backend/utils/sensor_simulator.py
+
 import random
 import time
 import os
@@ -16,7 +16,6 @@ class SensorSimulator:
     """Simulatore di sensori IoT per il giardino"""
 
     def __init__(self, mongo_uri=None, db_name=None):
-        # Leggi da .env usando i nomi corretti delle variabili
         self.mongo_uri = mongo_uri or os.getenv("MONGO_URI", "mongodb://localhost:27017/")
         self.db_name = db_name or os.getenv("MONGO_DB", "homegardening")
         self.collection_name = "sensor_data"
@@ -28,9 +27,9 @@ class SensorSimulator:
             self.collection = self.db[self.collection_name]
             # Test connessione
             self.client.server_info()
-            print(f"✅ Connesso a MongoDB: {self.db_name}")
+            print(f"Connesso a MongoDB: {self.db_name}")
         except Exception as e:
-            print(f"❌ Errore connessione MongoDB: {e}")
+            print(f"Errore connessione MongoDB: {e}")
             raise
 
         self.sensors_config = {
@@ -120,11 +119,11 @@ class SensorSimulator:
 
         try:
             result = self.collection.insert_one(data)
-            print(f"✅ {sensor_id} ({config['type']}): {value} {config['unit']} - ID: {result.inserted_id}")
+            print(f" {sensor_id} ({config['type']}): {value} {config['unit']} - ID: {result.inserted_id}")
             return True
 
         except Exception as e:
-            print(f"❌ MongoDB error: {e}")
+            print(f"MongoDB error: {e}")
             return False
 
     def run(self, interval_seconds: int = 60, duration_minutes: Optional[int] = None):
@@ -135,10 +134,10 @@ class SensorSimulator:
             interval_seconds: Intervallo tra le letture (default: 60 secondi)
             duration_minutes: Durata totale in minuti (None = infinito)
         """
-        print(f"🚀 Starting sensor simulator...")
-        print(f"📊 Saving to MongoDB: {self.db_name}.{self.collection_name}")
-        print(f"⏱️  Interval: {interval_seconds} seconds")
-        print(f"🔢 Active sensors: {len(self.sensors_config)}")
+        print(f"Starting sensor simulator...")
+        print(f"Saving to MongoDB: {self.db_name}.{self.collection_name}")
+        print(f"Interval: {interval_seconds} seconds")
+        print(f"Active sensors: {len(self.sensors_config)}")
         print("-" * 60)
 
         start_time = time.time()
@@ -157,19 +156,19 @@ class SensorSimulator:
                 if duration_minutes:
                     elapsed_minutes = (time.time() - start_time) / 60
                     if elapsed_minutes >= duration_minutes:
-                        print(f"\n✅ Simulation completed after {duration_minutes} minutes")
+                        print(f"\nSimulation completed after {duration_minutes} minutes")
                         break
 
                 # Aspetta prima della prossima iterazione
-                print(f"⏳ Waiting {interval_seconds} seconds...")
+                print(f"Waiting {interval_seconds} seconds...")
                 time.sleep(interval_seconds)
 
         except KeyboardInterrupt:
-            print("\n\n⚠️  Simulator stopped by user (Ctrl+C)")
+            print("\n\n  Simulator stopped by user (Ctrl+C)")
             self.client.close()
-            print("✅ Connessione MongoDB chiusa")
+            print("Connessione MongoDB chiusa")
         except Exception as e:
-            print(f"\n❌ Unexpected error: {e}")
+            print(f"\n Unexpected error: {e}")
             self.client.close()
 
 

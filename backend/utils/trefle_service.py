@@ -328,7 +328,7 @@ def fetch_plant_by_id(trefle_id: Union[int, str]) -> Dict[str, Any]:
     return fetch_plant_detail(trefle_id)
 
 
-# Comodità: solo le recommendations/brief per compilazione veloce nel FE
+
 @lru_cache(maxsize=256)
 def fetch_brief_and_recommendations(id_or_slug: Union[int, str]) -> Dict[str, Any]:
     """
