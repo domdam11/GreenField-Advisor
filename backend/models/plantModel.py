@@ -18,6 +18,11 @@ class PlantBase(BaseModel):
     sunlight: Optional[str] = "pieno sole"
     soil: Optional[str] = None
 
+    # --- CAMPI NUOVI AGGIUNTI ---
+    healthStatus: Optional[str] = None
+    healthAdvice: Optional[str] = None
+    # ----------------------------
+
     lastWateredAt: Optional[datetime] = None
     stage: Optional[str] = None
     imageUrl: Optional[str] = None
@@ -32,6 +37,10 @@ class PlantBase(BaseModel):
     addressAdmin1: Optional[str] = None
     addressCountry: Optional[str] = None
     addressCountryCode: Optional[str] = None
+
+    # --- AGGIUNGERE ANCHE QUI PER SICUREZZA ---
+    healthStatus: Optional[str] = None
+    healthAdvice: Optional[str] = None
 
     # Trefle link
     trefleId: Optional[int] = None
@@ -76,6 +85,12 @@ def serialize_plant(doc: dict) -> dict:
         "imageThumbUrl": doc.get("imageThumbUrl"),
         "createdAt": doc.get("createdAt"),
         "updatedAt": doc.get("updatedAt"),
+
+        # --- MAPPARE I NUOVI CAMPI ---
+        "healthStatus": doc.get("healthStatus"),
+        "healthAdvice": doc.get("healthAdvice"),
+        # -----------------------------
+
 
         # geo
         "geoLat": doc.get("geoLat"),
