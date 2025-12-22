@@ -6,8 +6,7 @@ from utils.auth import get_current_user
 from models.plantModel import PlantCreate, PlantUpdate, PlantOut
 from controllers.plantsController import (
     list_plants, get_plant, create_plant, update_plant, delete_plant,
-    save_plant_image, remove_plant_image,
-    calculate_irrigation_for_plant  
+    save_plant_image, remove_plant_image
 )
 
 from controllers.ai_irrigazione_controller import compute_for_plant, compute_batch
@@ -77,28 +76,40 @@ def api_delete_plant_image(plant_id: str, current_user: dict = Depends(get_curre
     return doc
 
 
-# AI IRRIGAZIONE
+# --- AI IRRIGAZIONE 
 
 class AIPlantBatchIn(BaseModel):
     plantIds: List[str] = Field(default_factory=list)
 
 
-#ENDPOINT DELLA PIPELINE
-@router.post("/{plant_id}/ai/irrigazione", summary="Analisi AI Irrigazione/Concimazione")
+@router.post("/{plant_id}/ai/irrigazione", summary="Analisi AI Ibrida (Fuzzy + LLM)")
 async def api_ai_irrigazione_per_pianta(
     plant_id: str,
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Esegue la pipeline AI v2 (Meteo Reale + Suolo + Concimazione).
+    Esegue la pipeline AI Ibrida: Meteo + Fuzzy Logic + LLM Supervisor.
     """
-    # Chiama la nuova funzione asincrona nel controller
-    return await calculate_irrigation_for_plant(current_user["id"], plant_id)
+    plant = get_plant(current_user["id"], plant_id)
+    if not plant:
+        raise HTTPException(status_code=404, detail="Pianta non trovata")
+    
+
+    # Il controller è async perché chiama servizi esterni (meteo/LLM)
+    return await compute_for_plant(plant)
 
 
 @router.post("/ai/irrigazione/batch")
-def api_ai_irrigazione_batch(
+async def api_ai_irrigazione_batch(
     payload: AIPlantBatchIn,
     current_user: dict = Depends(get_current_user)
 ):
-    return compute_batch(payload.plantIds, current_user)
+    # Recupera le piante reali dell'utente
+    user_plants = list_plants(current_user["id"])
+    
+    # Filtra solo quelle richieste
+    target_plants = [p for p in user_plants if str(p["id"]) in payload.plantIds]
+    
+    # IMPORTANTE: AWAIT ANCHE QUI!
+    # Se compute_batch è async nel controller, qui DEVE essere await
+    return await compute_batch(target_plants)

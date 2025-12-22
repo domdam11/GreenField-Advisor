@@ -4,8 +4,6 @@ from datetime import datetime
 from bson import ObjectId
 from controllers.userController import get_me, set_user_avatar
 from database import db
-
-
 from controllers import userController
 from utils.auth import get_current_user
 router = APIRouter()
@@ -48,8 +46,6 @@ def get_my_profile(current_user=Depends(get_current_user)):
 
 
     #Conteggio irrigazioni oggi
-
-
     today = datetime.utcnow().date()
     start = datetime.combine(today, datetime.min.time())
     end = datetime.combine(today, datetime.max.time())
