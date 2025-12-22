@@ -20,9 +20,9 @@ class DataValidator(ProcessorBase):
     def __init__(self):
         super().__init__("Data Validator")
         
-        # Definisci range validi per ogni sensore
+        # Definizione range validi per ogni sensore
         self.valid_ranges = {
-            "soil_moisture": (0, 100),      # %
+            "soil_moisture": (0, 100),       # %
             "temperature": (-10, 50),        # °C
             "humidity": (0, 100),            # %
             "light": (0, 100000),            # lux
@@ -42,19 +42,19 @@ class DataValidator(ProcessorBase):
         return PipelineStage.VALIDATION
         
     def _execute(self, context: PipelineContext) -> Dict[str, Any]:
-        """Valida e pulisce i dati"""
+        """Validazione e pulizia dei dati"""
         raw_data = context.raw_data
         cleaned = {}
         issues = []
         
-        # Valida ogni campo
+        # Validazione di ogni campo
         for field, value in raw_data.items():
             if field not in self.valid_ranges:
-                # Campo non riconosciuto, mantienilo così
+                # Campo non riconosciuto, lo si mantiene così
                 cleaned[field] = value
                 continue
                 
-            # Valida valore
+            # Validazione valore
             cleaned_value, issue = self._validate_value(field, value)
             cleaned[field] = cleaned_value
             
@@ -62,14 +62,14 @@ class DataValidator(ProcessorBase):
                 issues.append(issue)
                 context.add_warning(self.name, issue)
         
-        # Imputa valori mancanti
+        # Imputazione valori mancanti
         for field in self.valid_ranges.keys():
             if field not in cleaned or cleaned[field] is None:
                 cleaned[field] = self.default_values[field]
                 issues.append(f"Campo '{field}' mancante, usato default: {self.default_values[field]}")
                 context.add_warning(self.name, issues[-1])
         
-        # Salva dati puliti nel contesto
+        # Salvataggio dati puliti nel contesto
         context.cleaned_data = cleaned
         
         return {
@@ -83,17 +83,17 @@ class DataValidator(ProcessorBase):
         Valida un singolo valore.
         Returns: (valore_pulito, messaggio_errore_opzionale)
         """
-        # Converti a float
+        # Converto a float
         try:
             numeric_value = float(value)
         except (ValueError, TypeError):
             return self.default_values[field], f"Valore non numerico per '{field}': {value}"
         
-        # Controlla NaN/Inf
+        # Controllo NaN/Inf
         if math.isnan(numeric_value) or math.isinf(numeric_value):
             return self.default_values[field], f"Valore invalido per '{field}': {value}"
         
-        # Controlla range
+        # Controllo range
         min_val, max_val = self.valid_ranges[field]
         if numeric_value < min_val or numeric_value > max_val:
             # Clamp al range valido

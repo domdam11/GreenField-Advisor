@@ -13,27 +13,27 @@ from .action_generator import ActionGenerator
 
 class PipelineManager:
     """
-    Gestisce l'intera pipeline di processing.
-    Implementa Chain of Responsibility collegando tutti i processori.
+    Gestione dell'intera pipeline di processing.
+    Implementazione Chain of Responsibility collegando tutti i processori.
     """
     
     def __init__(self, plant_type: Optional[str] = None):
         """
-        Inizializza la pipeline.
+        Inizializzazione della pipeline.
         
         Args:
             plant_type: Tipo di pianta (tomato, lettuce, basil, etc.)
         """
         self.plant_type = plant_type
         
-        # Crea i processori
+        # Creazione dei processori
         self.validator = DataValidator()
         self.feature_engineer = FeatureEngineer()
         self.estimator = IrrigationEstimator(plant_type)
         self.anomaly_detector = AnomalyDetector()
         self.action_generator = ActionGenerator()
         
-        # Collega la catena (Chain of Responsibility)
+        # Collego la catena (Chain of Responsibility)
         self.validator.set_next(self.feature_engineer) \
                       .set_next(self.estimator) \
                       .set_next(self.anomaly_detector) \
@@ -43,7 +43,7 @@ class PipelineManager:
         
     def process(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Processa dati sensori attraverso l'intera pipeline.
+        Processo dati sensori attraverso l'intera pipeline.
         
         Args:
             sensor_data: Dati grezzi dai sensori
@@ -55,10 +55,10 @@ class PipelineManager:
         print("Avvio Pipeline di Processing")
         print(f"{'='*60}")
         
-        # Crea contesto
+        # Creazione contesto
         context = PipelineContext(sensor_data)
         
-        # Esegui pipeline
+        # Esecuzione pipeline
         try:
             context = self.validator.process(context)
             context.complete()
@@ -78,9 +78,9 @@ class PipelineManager:
         return self._format_output(context)
         
     def _format_output(self, context: PipelineContext) -> Dict[str, Any]:
-        """Formatta output della pipeline"""
+        """Formattazione output della pipeline"""
         
-        # Estrai suggerimento principale
+        # Estrazione suggerimento principale
         main_suggestion = None
         if context.suggestions:
             main_suggestion = {

@@ -33,7 +33,7 @@ class FeatureEngineer(ProcessorBase):
         features["wilting_point"] = soil_props["wilting_point"]   # Acqua inaccessibile (pianta muore)
         features["soil_behavior"] = soil_props["description"]
         
-        # Calcola Acqua Disponibile (AWC - Available Water Content) attuale
+        # Calcolo Acqua Disponibile (AWC - Available Water Content) attuale
         current_moisture = data.get("soil_moisture", 50)
         features["awc_percentage"] = self._calculate_awc(current_moisture, soil_props)
 
@@ -122,7 +122,7 @@ class FeatureEngineer(ProcessorBase):
 
     def _calculate_awc(self, current_moisture, props):
         """
-        Calcola % di acqua realmente disponibile per la pianta.
+        Calcolo % di acqua realmente disponibile per la pianta.
         0% = Punto Appassimento (Morte), 100% = Capacità di Campo (Ottimo).
         """
         fc = props["field_capacity"]
@@ -131,7 +131,7 @@ class FeatureEngineer(ProcessorBase):
         if current_moisture <= wp: return 0.0
         if current_moisture >= fc: return 100.0
         
-        # Normalizza nel range utile
+        # Normalizzazione nel range utile
         return round(((current_moisture - wp) / (fc - wp)) * 100, 1)
 
     # --- METODI STANDARD (INVARIATI) ---

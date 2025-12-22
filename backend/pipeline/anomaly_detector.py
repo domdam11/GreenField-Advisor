@@ -33,22 +33,22 @@ class AnomalyDetector(ProcessorBase):
         
         anomalies = []
         
-        # Controlla dati puliti
+        # Controllo dati puliti
         if context.cleaned_data:
             anomalies.extend(self._check_data_anomalies(context.cleaned_data))
         
-        # Controlla features
+        # Controllo features
         if context.features:
             anomalies.extend(self._check_feature_anomalies(context.features))
         
-        # Controlla estimation
+        # Controllo estimation
         if context.estimation:
             anomalies.extend(self._check_estimation_anomalies(context.estimation))
         
-        # Salva anomalie nel contesto
+        # Salvataggio anomalie nel contesto
         context.anomalies = anomalies
         
-        # Genera warning se ci sono anomalie critiche
+        # Generazione warning se ci sono anomalie critiche
         critical_anomalies = [a for a in anomalies if a["severity"] == "critical"]
         if critical_anomalies:
             for anomaly in critical_anomalies:
@@ -61,7 +61,7 @@ class AnomalyDetector(ProcessorBase):
         }
         
     def _check_data_anomalies(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Controlla anomalie nei dati sensori"""
+        """Controllo anomalie nei dati sensori"""
         anomalies = []
         
         # Controllo umidità suolo
@@ -133,7 +133,7 @@ class AnomalyDetector(ProcessorBase):
         return anomalies
         
     def _check_feature_anomalies(self, features: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Controlla anomalie nelle features calcolate"""
+        """Controllo anomalie nelle features calcolate"""
         anomalies = []
         
         # Controllo stress idrico
@@ -187,7 +187,7 @@ class AnomalyDetector(ProcessorBase):
         return anomalies
         
     def _check_estimation_anomalies(self, estimation: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Controlla anomalie nella stima irrigazione"""
+        """Controllo anomalie nella stima irrigazione"""
         anomalies = []
         
         # Controllo quantità acqua eccessiva

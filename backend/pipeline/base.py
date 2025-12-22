@@ -47,15 +47,15 @@ class PipelineContext:
         self.stage_results: Dict[str, Dict[str, Any]] = {}
         
     def add_error(self, stage: str, message: str):
-        """Aggiungi errore"""
+        """Aggiunta errore"""
         self.errors.append(f"[{stage}] {message}")
         
     def add_warning(self, stage: str, message: str):
-        """Aggiungi warning"""
+        """Aggiunta warning"""
         self.warnings.append(f"[{stage}] {message}")
         
     def set_stage_result(self, stage: PipelineStage, status: PipelineStatus, data: Dict[str, Any]):
-        """Salva risultato di uno stage"""
+        """Salvataggio risultato di uno stage"""
         self.stage_results[stage.value] = {
             "status": status.value,
             "data": data,
@@ -63,11 +63,11 @@ class PipelineContext:
         }
         
     def complete(self):
-        """Marca la pipeline come completata"""
+        """Marco la pipeline come completata"""
         self.completed_at = datetime.utcnow()
         
     def to_dict(self) -> Dict[str, Any]:
-        """Serializza il contesto"""
+        """Serializzazione del contesto"""
         return {
             "raw_data": self.raw_data,
             "cleaned_data": self.cleaned_data,
@@ -96,13 +96,13 @@ class ProcessorBase(ABC):
         self._next_processor: Optional['ProcessorBase'] = None
         
     def set_next(self, processor: 'ProcessorBase') -> 'ProcessorBase':
-        """Imposta il prossimo processore nella catena"""
+        """Imposto il prossimo processore nella catena"""
         self._next_processor = processor
         return processor
         
     def process(self, context: PipelineContext) -> PipelineContext:
         """
-        Processa il contesto e passa al prossimo se esiste.
+        Processo il contesto e passa al prossimo se esiste.
         Template Method Pattern.
         """
         try:
@@ -111,7 +111,7 @@ class ProcessorBase(ABC):
             # Esegui la logica specifica del processore
             result = self._execute(context)
             
-            # Salva risultato
+            # Salvataggio risultato
             stage = self._get_stage()
             context.set_stage_result(
                 stage,
@@ -130,7 +130,7 @@ class ProcessorBase(ABC):
                 {"error": str(e)}
             )
             
-        # Passa al prossimo processore
+        # Passo al prossimo processore
         if self._next_processor:
             return self._next_processor.process(context)
             

@@ -36,7 +36,7 @@ class IrrigationStrategy(ABC):
 class TomatoStrategy(IrrigationStrategy):
     def estimate(self, cleaned_data: Dict[str, Any], features: Dict[str, Any]) -> Dict[str, Any]:
         added = cleaned_data.get("water_added_24h", 0.0) 
-        # Target per ciclo (es. 4 Litri ogni 3 giorni)
+        # Target per ciclo in litri
         TARGET = 4.0 
         amt, dec = self._calculate_budget(TARGET, added)
         return {"should_water": dec != IrrigationDecision.DO_NOT_WATER, "decision": dec.value, "water_amount_ml": amt * 1000, "confidence": 0.95, "reasoning": f"Target Ciclo: {TARGET}L. Versati: {added}L.", "plant_type": "tomato"}
