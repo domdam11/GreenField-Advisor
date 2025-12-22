@@ -1,3 +1,17 @@
+# Carica .env all'avvio ---
+from dotenv import load_dotenv
+import os
+
+# Carica le variabili d'ambiente dal file .env nella root
+load_dotenv()
+
+import sys
+if sys.version_info < (3, 10):
+    import importlib.metadata
+    import importlib_metadata
+    importlib.metadata.packages_distributions = importlib_metadata.packages_distributions
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -5,6 +19,7 @@ from pathlib import Path
 from config import settings
 from database import db
 from controllers.interventionsController import ensure_interventions_indexes
+from utils.ai_explainer_service import get_ai_explanation
 
 # Import dei Router
 from routers import interventionsRouter
@@ -50,12 +65,24 @@ app.include_router(imageRouter.router)
 app.include_router(pipelineRouter.router)
 app.include_router(aiRouter.router)
 
-# Endpoint Health Check
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "Greenfield Advisor"}
+    # Verifica al volo se la chiave AI è letta correttamente
+    ai_key = os.getenv("HF_API_KEY")
+    ai_status = "OK" if ai_key and "sk-" in ai_key else "MANCANTE/INVALIDA"
+    
+    return {
+        "status": "ok", 
+        "service": "Greenfield Advisor",
+        "system_check": {
+            "ai_api_key": ai_status,
+            "ai_model": os.getenv("HF_MODEL", "Default"),
+            "database": "Connected"
+        }
+    }
 
-# ---- Startup: Inizializzazione Indici Database ----
+
 @app.on_event("startup")
 def init_indexes():
     # Indici Utenti
