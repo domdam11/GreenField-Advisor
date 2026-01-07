@@ -194,7 +194,7 @@ Ottieni le API keys gratuite:
 
 **Frontend - Configurazione API Endpoint**
 
-Se il backend non è su 'localhost:8000', modifica 'frontend/src/services/api.js':
+Se il backend non è su **localhost:8000**, modifica **frontend/src/services/api.js**:
 
 ```javascript
 const API_BASE_URL = 'http://localhost:8000/api';
