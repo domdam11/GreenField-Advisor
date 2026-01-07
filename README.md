@@ -252,7 +252,6 @@ Dopo l'avvio, dovresti vedere:
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO:     Started reloader process
 INFO:     Application startup complete.
-
 ```
 
 **Frontend**
@@ -263,7 +262,6 @@ You can now view greenfield-advisor in the browser.
 
   Local:            http://localhost:3000
   On Your Network:  http://192.168.x.x:3000
-
 ```
 
 Accedi all'applicazione:
