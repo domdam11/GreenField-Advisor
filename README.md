@@ -30,6 +30,7 @@ GreenField-Advisor/
 ├── backend/   # FastAPI + Python (AI Services, Pipeline, Controllers)
 ├── frontend/  # React + TailwindCSS (Dashboard SPA)
 └── README.md
+```
 
 ---
 
