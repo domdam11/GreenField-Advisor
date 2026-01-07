@@ -80,3 +80,32 @@ npm --version
 
 # Verifica MongoDB (se locale)
 mongod --version
+```
+
+---
+
+## 📦 Installazione
+
+# 🪟 Windows
+
+# 1️⃣ Backend Setup
+```powershell
+# Naviga nella cartella backend
+cd backend
+
+# Crea ambiente virtuale Python
+python -m venv venv
+
+# Attiva ambiente virtuale
+venv\Scripts\activate
+
+# Aggiorna pip
+python -m pip install --upgrade pip
+
+# Installa dipendenze
+pip install -r requirements.txt
+
+# NOTA: Se riscontri errori con TensorFlow, installa la versione CPU:
+# pip install tensorflow-cpu
+```
+
