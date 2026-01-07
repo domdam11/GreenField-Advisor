@@ -276,5 +276,7 @@ Accedi all'applicazione:
 ## 📊 Dataset
 
 **PlantVillage Dataset (CNN Training)**
+
 Il modello CNN MobileNetV2 è stato addestrato sul dataset PlantVillage:
+
 **Link Kaggle**: https://www.kaggle.com/datasets/emmarex/plantdisease
