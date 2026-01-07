@@ -312,12 +312,14 @@ GET    /api/weather                 - Dati meteo correnti
 ## 🐛 Troubleshooting
 
 **Problema**: *ModuleNotFoundError: No module named 'fastapi'*
+
 **Soluzione**: Verifica che l'ambiente virtuale sia attivo e reinstalla dipendenze:
 ```bash
 pip install -r requirements.txt
 ```
 
 **Problema**: *Port 8000 already in use*
+
 **Soluzione**: Cambia porta o termina processo esistente:
 ```bash
 # Windows
@@ -329,6 +331,7 @@ lsof -ti:8000 | xargs kill -9
 ```
 
 **Problema:  MongoDB Connection Failed**
+
 **Soluzione**: Verifica che MongoDB sia in esecuzione:
 ```bash
 # Windows (se servizio)
@@ -341,6 +344,7 @@ sudo systemctl start mongod
 ```
 
 **Problema**: *npm ERR! ERESOLVE unable to resolve dependency tree*
+
 **Soluzione**: Usa flag legacy peer deps:
 ```bash
 # Windows
@@ -352,12 +356,14 @@ lsof -ti:8000 | xargs kill -9
 ```
 
 **Problema**: *Port 8000 already in use*
+
 **Soluzione**: Cambia porta o termina processo esistente:
 ```bash
 npm install --legacy-peer-deps
 ```
 
 **Problema: TensorFlow Installation Errors (Apple Silicon M1/M2)**
+
 **Soluzione**: Installa versione compatibile:
 ```bash
 pip install tensorflow-macos tensorflow-metal
