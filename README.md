@@ -165,3 +165,38 @@ npm audit fix
 **Backend - Variabili d'Ambiente:**
 
 Crea un file .env nella cartella backend/ con le seguenti variabili:
+
+```text
+# MongoDB
+MONGODB_URL=mongodb://localhost:27017
+DB_NAME=greenfield_db
+
+# JWT
+SECRET_KEY=your-secret-key-here-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OpenWeatherMap API (opzionale)
+OPENWEATHER_API_KEY=your-openweathermap-api-key
+
+# OpenRouter API (per LLM)
+OPENROUTER_API_KEY=your-openrouter-api-key
+
+# HuggingFace API (fallback LLM)
+HF_API_KEY=your-huggingface-api-key
+
+```
+
+Ottieni le API keys gratuite:
+- **OpenWeatherMap**: https://openweathermap.org/api
+- **OpenRouter**: https://openrouter.ai/
+- **HuggingFace**: https://huggingface.co/settings/tokens
+
+**Backend - Variabili d'Ambiente:**
+
+Se il backend non è su *localhost:8000*, modifica *frontend/src/services/api.js*:
+
+```javascript
+const API_BASE_URL = 'http://localhost:8000/api';
+
+```
