@@ -268,9 +268,9 @@ You can now view greenfield-advisor in the browser.
 ```
 
 Accedi all'applicazione:
-- Frontend: http://localhost:3000
-- API Docs (Swagger): http://localhost:8000/docs
-- MongoDB: **mongodb://localhost:27017/greenfield_db**
+- **Frontend**: http://localhost:3000
+- **API Docs (Swagger)**: http://localhost:8000/docs
+- **MongoDB**: *mongodb://localhost:27017/greenfield_db*
 
 ---
 
@@ -292,7 +292,7 @@ Una volta avviato il backend, la documentazione interattiva è disponibile su:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-** Endpoint Principali **
+**Endpoint Principali**
 
 ```text
 POST   /api/auth/login              - Autenticazione utente
