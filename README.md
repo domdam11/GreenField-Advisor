@@ -34,7 +34,6 @@ GreenField-Advisor/
 
 ---
 
-
 **Pattern Implementati:**
 - **Strategy**: Algoritmi intercambiabili per stima irrigazione (TomatoStrategy, PotatoStrategy, etc.)
 - **Chain of Responsibility**: Pipeline modulare (DataValidator → FeatureEngineer → IrrigationEstimator)
@@ -86,9 +85,9 @@ mongod --version
 
 ## 📦 Installazione
 
-# 🪟 Windows
+### 🪟 Windows
 
-# 1️⃣ Backend Setup
+### 1️⃣ Backend Setup
 ```powershell
 # Naviga nella cartella backend
 cd backend
@@ -109,3 +108,56 @@ pip install -r requirements.txt
 # pip install tensorflow-cpu
 ```
 
+### 2️⃣ Frontend Setup
+```powershell
+# Apri un NUOVO terminale e naviga nella cartella frontend
+cd frontend
+
+# Installa dipendenze Node.js
+npm install
+
+# Opzionale: Risolvi vulnerabilità (se richiesto)
+npm audit fix
+```
+
+---
+
+### 🍎 macOS/Linux
+
+### 1️⃣ Backend Setup
+```bash
+# Naviga nella cartella backend
+cd backend
+
+# Crea ambiente virtuale Python
+python3 -m venv venv
+
+# Attiva ambiente virtuale
+source venv/bin/activate
+
+# Aggiorna pip
+python -m pip install --upgrade pip
+
+# Installa dipendenze
+pip install -r requirements.txt
+
+# NOTA: Su macOS con Apple Silicon (M1/M2), potrebbe essere necessario:
+# brew install hdf5
+# export HDF5_DIR=/opt/homebrew/opt/hdf5
+```
+
+### 2️⃣ Frontend Setup
+```bash
+# Apri un NUOVO terminale e naviga nella cartella frontend
+cd frontend
+
+# Installa dipendenze Node.js
+npm install
+
+# Opzionale: Risolvi vulnerabilità (se richiesto)
+npm audit fix
+```
+
+---
+
+## ⚙️ Configurazione
