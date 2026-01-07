@@ -201,7 +201,7 @@ Ottieni le API keys gratuite:
 
 **Frontend - Configurazione API Endpoint**
 
-Se il backend non è su **localhost:8000**, modifica **frontend/src/services/api.js**:
+Se il backend non è su *localhost:8000*, modifica *frontend/src/services/api.js*:
 
 ```javascript
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -288,7 +288,7 @@ Il modello CNN MobileNetV2 è stato addestrato sul dataset PlantVillage:
 - **10 classi** principali (Bacterial Spot, Late Blight, Mosaic Virus, etc.)
 - **Transfer Learning** con MobileNetV2 pre-trained su ImageNet
 - Accuracy: 95.3% (Validation Set)
-- 
+  
 ---
 
 <a name="api-documentation"></a>
