@@ -18,7 +18,8 @@
 - [API Documentation](#-api-documentation)
 - [Troubleshooting](#-troubleshooting)
 - [Autori](#-autori)
-
+- [Licenza](#-licenza)
+- [Supporto](#-supporto)
 ---
 
 ## 🏗️ Architettura
