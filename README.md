@@ -164,4 +164,4 @@ npm audit fix
 
 **Backend - Variabili d'Ambiente:**
 
-****Crea un file .env nella cartella backend/ con le seguenti variabili:****
+**Crea un file .env nella cartella backend/ con le seguenti variabili:**
