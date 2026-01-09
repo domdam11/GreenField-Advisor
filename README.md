@@ -219,7 +219,7 @@ REACT_APP_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
 Ottieni le API keys gratuite:
 - **MongoDB Atlas**: https://www.mongodb.com/cloud/atlas/register
 - **Gmail App Password**: https://myaccount.google.com/apppasswords
-- - **OpenRouter API**: https://openrouter.ai/
+- **OpenRouter API**: https://openrouter.ai/
 - **Google Maps API**: https://openweathermap.org/api](https://console.cloud.google.com/apis/credentials
 - **Google Cloud API**: https://console.cloud.google.com/
 
