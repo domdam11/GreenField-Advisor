@@ -29,6 +29,7 @@ from routers import sensorRouter
 from routers import imageRouter
 from routers import aiRouter 
 from routers import userRouter, plantsRouter
+from routers import authRouter
 
 import logging
 
@@ -75,6 +76,7 @@ app.include_router(sensorRouter.router)
 app.include_router(imageRouter.router)
 app.include_router(pipelineRouter.router)
 app.include_router(aiRouter.router)
+app.include_router(authRouter.router, prefix="/api/auth", tags=["Authentication"])
 
 @app.get("/health")
 def health():
